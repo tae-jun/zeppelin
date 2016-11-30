@@ -39,6 +39,26 @@
         websocketEvents.sendNewEvent({op: 'DEL_NOTE', data: {id: noteId}});
       },
 
+      removeFolder: function(folderId) {
+        websocketEvents.sendNewEvent({op: 'REMOVE_FOLDER', data: {id: folderId}});
+      },
+
+      moveNoteToTrash: function(noteId) {
+        websocketEvents.sendNewEvent({op: 'MOVE_NOTE_TO_TRASH', data: {id: noteId}});
+      },
+
+      moveFolderToTrash: function(folderId) {
+        websocketEvents.sendNewEvent({op: 'MOVE_FOLDER_TO_TRASH', data: {id: folderId}});
+      },
+
+      restoreFolder: function(folderId) {
+        websocketEvents.sendNewEvent({op: 'RESTORE_FOLDER', data: {id: folderId}});
+      },
+
+      emptyTrash: function() {
+        websocketEvents.sendNewEvent({op: 'EMPTY_TRASH'});
+      },
+
       cloneNote: function(noteIdToClone, newNoteName) {
         websocketEvents.sendNewEvent({op: 'CLONE_NOTE', data: {id: noteIdToClone, name: newNoteName}});
       },

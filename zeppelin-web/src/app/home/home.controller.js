@@ -96,8 +96,24 @@
       noteActionSrv.renameFolder(node.id);
     };
 
+    $scope.removeFolder = function(folderId) {
+      noteActionSrv.removeFolder(folderId);
+    };
+
+    $scope.moveFolderToTrash = function(folderId) {
+      noteActionSrv.moveFolderToTrash(folderId);
+    };
+
     $scope.removeNote = function(noteId) {
       noteActionSrv.removeNote(noteId, false);
+    };
+
+    $scope.moveNoteToTrash = function(noteId) {
+      noteActionSrv.moveNoteToTrash(noteId, false);
+    };
+
+    $scope.emptyTrash = function() {
+      noteActionSrv.emptyTrash();
     };
 
     $scope.clearAllParagraphOutput = function(noteId) {

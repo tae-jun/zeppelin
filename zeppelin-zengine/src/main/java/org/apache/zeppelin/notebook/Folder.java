@@ -27,6 +27,7 @@ import java.util.*;
  */
 public class Folder {
   public static final String ROOT_FOLDER_ID = "/";
+  public static final String TRASH_FOLDER_ID = "~Trash";
 
   private String id;
 

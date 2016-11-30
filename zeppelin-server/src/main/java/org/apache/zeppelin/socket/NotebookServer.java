@@ -71,6 +71,9 @@ import org.apache.zeppelin.utils.InterpreterBindingUtils;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -212,6 +215,18 @@ public class NotebookServer extends WebSocketServlet implements
             break;
           case DEL_NOTE:
             removeNote(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case REMOVE_FOLDER:
+            removeFolder(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case MOVE_NOTE_TO_TRASH:
+            moveNoteToTrash(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case MOVE_FOLDER_TO_TRASH:
+            moveFolderToTrash(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case EMPTY_TRASH:
+            emptyTrash(conn, userAndRoles, notebook, messagereceived);
             break;
           case CLONE_NOTE:
             cloneNote(conn, userAndRoles, notebook, messagereceived);
@@ -884,6 +899,73 @@ public class NotebookServer extends WebSocketServlet implements
     notebook.removeNote(noteId, subject);
     removeNote(noteId);
     broadcastNoteList(subject, userAndRoles);
+  }
+
+  private void removeFolder(NotebookSocket conn, HashSet<String> userAndRoles,
+                            Notebook notebook, Message fromMessage)
+      throws SchedulerException, IOException {
+    String folderId = (String) fromMessage.get("id");
+    if (folderId == null) {
+      return;
+    }
+
+    NotebookAuthorization notebookAuthorization = notebook.getNotebookAuthorization();
+    List<Note> notes = notebook.getNotesUnderFolder(folderId);
+    for (Note note : notes) {
+      String noteId = note.getId();
+      if (!notebookAuthorization.isOwner(noteId, userAndRoles)) {
+        permissionError(conn, "remove folder of '" + note.getName() + "'", fromMessage.principal,
+                userAndRoles, notebookAuthorization.getOwners(noteId));
+        return;
+      }
+    }
+
+    AuthenticationInfo subject = new AuthenticationInfo(fromMessage.principal);
+    for (Note note : notes) {
+      notebook.removeNote(note.getId(), subject);
+      removeNote(note.getId());
+    }
+    broadcastNoteList(subject, userAndRoles);
+  }
+
+  private void moveNoteToTrash(NotebookSocket conn, HashSet<String> userAndRoles,
+                               Notebook notebook, Message fromMessage)
+      throws SchedulerException, IOException {
+    String noteId = (String) fromMessage.get("id");
+    if (noteId == null) {
+      return;
+    }
+
+    Note note = notebook.getNote(noteId);
+    fromMessage.put("name", Folder.TRASH_FOLDER_ID + "/" + note.getName());
+    renameNote(conn, userAndRoles, notebook, fromMessage);
+  }
+
+  private void moveFolderToTrash(NotebookSocket conn, HashSet<String> userAndRoles,
+                                 Notebook notebook, Message fromMessage)
+      throws SchedulerException, IOException {
+    String folderId = (String) fromMessage.get("id");
+    if (folderId == null) {
+      return;
+    }
+
+    String trashFolderId = Folder.TRASH_FOLDER_ID + "/" + folderId;
+    if (notebook.hasFolder(trashFolderId)){
+      DateTime currentDate = new DateTime();
+      DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+      trashFolderId += " removed at " + formatter.print(currentDate);
+    }
+
+    fromMessage.put("name", trashFolderId);
+    renameFolder(conn, userAndRoles, notebook, fromMessage);
+  }
+
+  private void emptyTrash(NotebookSocket conn, HashSet<String> userAndRoles,
+                          Notebook notebook, Message fromMessage)
+    throws SchedulerException, IOException {
+    fromMessage.data = new HashMap<>();
+    fromMessage.put("id", Folder.TRASH_FOLDER_ID);
+    removeFolder(conn, userAndRoles, notebook, fromMessage);
   }
 
   private void updateParagraph(NotebookSocket conn, HashSet<String> userAndRoles,

@@ -308,6 +308,12 @@ public class Notebook implements NoteEventListener {
     }
   }
 
+  public Folder getFolder(String folderId) {
+    synchronized (folders) {
+      return folders.getFolder(folderId);
+    }
+  }
+
   public boolean hasFolder(String folderId) {
     synchronized (folders) {
       return folders.hasFolder(folderId);

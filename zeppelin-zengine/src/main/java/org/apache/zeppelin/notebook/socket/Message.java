@@ -49,6 +49,8 @@ public class Message {
     REMOVE_FOLDER,
     MOVE_NOTE_TO_TRASH,
     MOVE_FOLDER_TO_TRASH,
+    RESTORE_FOLDER,
+    RESTORE_NOTE,
     EMPTY_TRASH,
     CLONE_NOTE,       // [c-s] clone new notebook
                       // @param id id of note to clone

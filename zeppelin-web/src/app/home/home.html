@@ -43,6 +43,10 @@ limitations under the License.
          class="fa fa-trash-o" ng-show="showNoteButton" ng-click="removeNote(node.id)"
          tooltip-placement="bottom" tooltip="Remove note for good">
       </i>
+      <i ng-if="node.isTrash" style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
+         class="fa fa-undo" ng-show="showNoteButton" ng-click="restoreNote(node.id)"
+         tooltip-placement="bottom" tooltip="Restore note">
+      </i>
     </a>
   </div>
   <!-- folder -->
@@ -66,6 +70,10 @@ limitations under the License.
         <i ng-if="node.isTrash" style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
            class="fa fa-trash-o" ng-show="showFolderButton" ng-click="removeFolder(node.id)"
            tooltip-placement="bottom" tooltip="Remove folder for good">
+        </i>
+        <i ng-if="node.isTrash" style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
+           class="fa fa-undo" ng-show="showFolderButton" ng-click="restoreFolder(node.id)"
+           tooltip-placement="bottom" tooltip="Restore folder">
         </i>
       </a>
     </div>

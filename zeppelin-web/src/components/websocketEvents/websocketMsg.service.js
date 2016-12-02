@@ -35,14 +35,6 @@
         });
       },
 
-      deleteNote: function(noteId) {
-        websocketEvents.sendNewEvent({op: 'DEL_NOTE', data: {id: noteId}});
-      },
-
-      removeFolder: function(folderId) {
-        websocketEvents.sendNewEvent({op: 'REMOVE_FOLDER', data: {id: folderId}});
-      },
-
       moveNoteToTrash: function(noteId) {
         websocketEvents.sendNewEvent({op: 'MOVE_NOTE_TO_TRASH', data: {id: noteId}});
       },
@@ -51,8 +43,20 @@
         websocketEvents.sendNewEvent({op: 'MOVE_FOLDER_TO_TRASH', data: {id: folderId}});
       },
 
+      restoreNote: function(noteId) {
+        websocketEvents.sendNewEvent({op: 'RESTORE_NOTE', data: {id: noteId}});
+      },
+
       restoreFolder: function(folderId) {
         websocketEvents.sendNewEvent({op: 'RESTORE_FOLDER', data: {id: folderId}});
+      },
+
+      deleteNote: function(noteId) {
+        websocketEvents.sendNewEvent({op: 'DEL_NOTE', data: {id: noteId}});
+      },
+
+      removeFolder: function(folderId) {
+        websocketEvents.sendNewEvent({op: 'REMOVE_FOLDER', data: {id: folderId}});
       },
 
       emptyTrash: function() {

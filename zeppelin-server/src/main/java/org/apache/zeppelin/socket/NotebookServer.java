@@ -228,6 +228,12 @@ public class NotebookServer extends WebSocketServlet implements
           case EMPTY_TRASH:
             emptyTrash(conn, userAndRoles, notebook, messagereceived);
             break;
+          case RESTORE_FOLDER:
+            restoreFolder(conn, userAndRoles, notebook, messagereceived);
+            break;
+          case RESTORE_NOTE:
+            restoreNote(conn, userAndRoles, notebook, messagereceived);
+            break;
           case CLONE_NOTE:
             cloneNote(conn, userAndRoles, notebook, messagereceived);
             break;
@@ -759,6 +765,12 @@ public class NotebookServer extends WebSocketServlet implements
   private void renameNote(NotebookSocket conn, HashSet<String> userAndRoles,
                           Notebook notebook, Message fromMessage)
       throws SchedulerException, IOException {
+    renameNote(conn, userAndRoles, notebook, fromMessage, "rename");
+  }
+
+  private void renameNote(NotebookSocket conn, HashSet<String> userAndRoles,
+                          Notebook notebook, Message fromMessage, String op)
+      throws SchedulerException, IOException {
     String noteId = (String) fromMessage.get("id");
     String name = (String) fromMessage.get("name");
 
@@ -785,7 +797,13 @@ public class NotebookServer extends WebSocketServlet implements
   }
 
   private void renameFolder(NotebookSocket conn, HashSet<String> userAndRoles,
-                          Notebook notebook, Message fromMessage)
+                            Notebook notebook, Message fromMessage)
+      throws SchedulerException, IOException {
+    renameFolder(conn, userAndRoles, notebook, fromMessage, "rename");
+  }
+
+  private void renameFolder(NotebookSocket conn, HashSet<String> userAndRoles,
+                          Notebook notebook, Message fromMessage, String op)
       throws SchedulerException, IOException {
     String oldFolderId = (String) fromMessage.get("id");
     String newFolderId = (String) fromMessage.get("name");
@@ -798,7 +816,7 @@ public class NotebookServer extends WebSocketServlet implements
     for (Note note : notebook.getNotesUnderFolder(oldFolderId)) {
       String noteId = note.getId();
       if (!notebookAuthorization.isOwner(noteId, userAndRoles)) {
-        permissionError(conn, "rename folder of '" + note.getName() + "'", fromMessage.principal,
+        permissionError(conn, op + " folder of '" + note.getName() + "'", fromMessage.principal,
                 userAndRoles, notebookAuthorization.getOwners(noteId));
         return;
       }
@@ -937,8 +955,10 @@ public class NotebookServer extends WebSocketServlet implements
     }
 
     Note note = notebook.getNote(noteId);
-    fromMessage.put("name", Folder.TRASH_FOLDER_ID + "/" + note.getName());
-    renameNote(conn, userAndRoles, notebook, fromMessage);
+    if (note != null && !note.isTrash()){
+      fromMessage.put("name", Folder.TRASH_FOLDER_ID + "/" + note.getName());
+      renameNote(conn, userAndRoles, notebook, fromMessage, "move");
+    }
   }
 
   private void moveFolderToTrash(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -949,15 +969,50 @@ public class NotebookServer extends WebSocketServlet implements
       return;
     }
 
-    String trashFolderId = Folder.TRASH_FOLDER_ID + "/" + folderId;
-    if (notebook.hasFolder(trashFolderId)){
-      DateTime currentDate = new DateTime();
-      DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-      trashFolderId += " removed at " + formatter.print(currentDate);
+    Folder folder = notebook.getFolder(folderId);
+    if (folder != null && !folder.isTrash()) {
+      String trashFolderId = Folder.TRASH_FOLDER_ID + "/" + folderId;
+      if (notebook.hasFolder(trashFolderId)){
+        DateTime currentDate = new DateTime();
+        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+        trashFolderId += " removed at " + formatter.print(currentDate);
+      }
+
+      fromMessage.put("name", trashFolderId);
+      renameFolder(conn, userAndRoles, notebook, fromMessage, "move");
+    }
+  }
+
+  private void restoreNote(NotebookSocket conn, HashSet<String> userAndRoles,
+                          Notebook notebook, Message fromMessage)
+      throws SchedulerException, IOException {
+    String noteId = (String) fromMessage.get("id");
+
+    if (noteId == null) {
+      return;
     }
 
-    fromMessage.put("name", trashFolderId);
-    renameFolder(conn, userAndRoles, notebook, fromMessage);
+    Note note = notebook.getNote(noteId);
+    if (note != null && note.isTrash()) {
+      fromMessage.put("name", note.getName().replaceFirst(Folder.TRASH_FOLDER_ID + "/", ""));
+      renameNote(conn, userAndRoles, notebook, fromMessage, "restore");
+    }
+  }
+
+  private void restoreFolder(NotebookSocket conn, HashSet<String> userAndRoles,
+                            Notebook notebook, Message fromMessage)
+          throws SchedulerException, IOException {
+    String folderId = (String) fromMessage.get("id");
+
+    if (folderId == null) {
+      return;
+    }
+
+    Folder folder = notebook.getFolder(folderId);
+    if (folder != null && folder.isTrash()) {
+      fromMessage.put("name", folder.getId().replaceFirst(Folder.TRASH_FOLDER_ID + "/", ""));
+      renameFolder(conn, userAndRoles, notebook, fromMessage, "restore");
+    }
   }
 
   private void emptyTrash(NotebookSocket conn, HashSet<String> userAndRoles,
@@ -1919,7 +1974,7 @@ public class NotebookServer extends WebSocketServlet implements
     return;
   }
 
-  private void getInterpreterSettings(NotebookSocket conn, AuthenticationInfo subject) 
+  private void getInterpreterSettings(NotebookSocket conn, AuthenticationInfo subject)
       throws IOException {
     List<InterpreterSetting> availableSettings = notebook().getInterpreterFactory().get();
     conn.send(serializeMessage(new Message(OP.INTERPRETER_SETTINGS)

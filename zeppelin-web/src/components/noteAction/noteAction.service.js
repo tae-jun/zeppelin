@@ -19,6 +19,35 @@
   noteActionSrv.$inject = ['websocketMsgSrv', '$location', 'renameSrv', 'noteListDataFactory'];
 
   function noteActionSrv(websocketMsgSrv, $location, renameSrv, noteListDataFactory) {
+    this.moveNoteToTrash = function(noteId, redirectToHome) {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: 'Move this note to trash?',
+        message: 'This note will be moved to <strong>trash</strong>.',
+        callback: function(result) {
+          if (result) {
+            websocketMsgSrv.moveNoteToTrash(noteId);
+            if (redirectToHome) {
+              $location.path('/');
+            }
+          }
+        }
+      });
+    };
+
+    this.moveFolderToTrash = function(folderId) {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: 'Move this folder to trash?',
+        message: 'This folder will be moved to <strong>trash</strong>.',
+        callback: function(result) {
+          if (result) {
+            websocketMsgSrv.moveFolderToTrash(folderId);
+          }
+        }
+      });
+    };
+
     this.removeNote = function(noteId, redirectToHome) {
       BootstrapDialog.confirm({
         type: BootstrapDialog.TYPE_WARNING,
@@ -45,35 +74,6 @@
         callback: function(result) {
           if (result) {
             websocketMsgSrv.removeFolder(folderId);
-          }
-        }
-      });
-    };
-
-    this.moveNoteToTrash = function(noteId, redirectToHome) {
-      BootstrapDialog.confirm({
-        closable: true,
-        title: 'Move this note to trash?',
-        message: 'This note will be moved to <strong>trash</strong>.',
-        callback: function(result) {
-          if (result) {
-            websocketMsgSrv.moveNoteToTrash(noteId);
-            if (redirectToHome) {
-              $location.path('/');
-            }
-          }
-        }
-      });
-    };
-
-    this.moveFolderToTrash = function(folderId) {
-      BootstrapDialog.confirm({
-        closable: true,
-        title: 'Move this folder to trash?',
-        message: 'This folder will be moved to <strong>trash</strong>.',
-        callback: function(result) {
-          if (result) {
-            websocketMsgSrv.moveFolderToTrash(folderId);
           }
         }
       });

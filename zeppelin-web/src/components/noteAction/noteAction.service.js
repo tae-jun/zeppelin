@@ -79,6 +79,20 @@
       });
     };
 
+    this.restoreAll = function() {
+      BootstrapDialog.confirm({
+        closable: true,
+        title: 'Are you sure want to restore all notes in the trash?',
+        message: 'Folders and notes in the trash will be ' +
+          '<strong>merged</strong> into their original position.',
+        callback: function(result) {
+          if (result) {
+            websocketMsgSrv.restoreAll();
+          }
+        }
+      });
+    };
+
     this.emptyTrash = function() {
       BootstrapDialog.confirm({
         type: BootstrapDialog.TYPE_WARNING,

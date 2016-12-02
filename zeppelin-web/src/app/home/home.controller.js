@@ -92,10 +92,6 @@
       noteActionSrv.renameNote(node.id, node.path);
     };
 
-    $scope.removeFolder = function(folderId) {
-      noteActionSrv.removeFolder(folderId);
-    };
-
     $scope.moveNoteToTrash = function(noteId) {
       noteActionSrv.moveNoteToTrash(noteId, false);
     };
@@ -112,12 +108,20 @@
       websocketMsgSrv.restoreFolder(folderId);
     };
 
+    $scope.restoreAll = function() {
+      noteActionSrv.restoreAll();
+    };
+
     $scope.renameFolder = function(node) {
       noteActionSrv.renameFolder(node.id);
     };
 
     $scope.removeNote = function(noteId) {
       noteActionSrv.removeNote(noteId, false);
+    };
+
+    $scope.removeFolder = function(folderId) {
+      noteActionSrv.removeFolder(folderId);
     };
 
     $scope.emptyTrash = function() {

@@ -95,6 +95,10 @@ limitations under the License.
            class="fa fa-trash-o" ng-show="showFolderButton" ng-click="emptyTrash()"
            tooltip-placement="bottom" tooltip="Empty trash">
         </i>
+        <i style="font-size: 13px; margin-left: 2px; cursor: pointer; text-decoration: none;"
+           class="fa fa-undo" ng-show="showFolderButton" ng-click="restoreAll()"
+           tooltip-placement="bottom" tooltip="Restore all">
+        </i>
       </a>
     </div>
     <div ng-if="!node.hidden">

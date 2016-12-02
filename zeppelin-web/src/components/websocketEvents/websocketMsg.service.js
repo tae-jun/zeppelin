@@ -51,6 +51,10 @@
         websocketEvents.sendNewEvent({op: 'RESTORE_FOLDER', data: {id: folderId}});
       },
 
+      restoreAll: function() {
+        websocketEvents.sendNewEvent({op: 'RESTORE_ALL'});
+      },
+
       deleteNote: function(noteId) {
         websocketEvents.sendNewEvent({op: 'DEL_NOTE', data: {id: noteId}});
       },

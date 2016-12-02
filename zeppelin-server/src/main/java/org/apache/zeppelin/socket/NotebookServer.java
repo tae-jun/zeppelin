@@ -234,6 +234,9 @@ public class NotebookServer extends WebSocketServlet implements
           case RESTORE_NOTE:
             restoreNote(conn, userAndRoles, notebook, messagereceived);
             break;
+          case RESTORE_ALL:
+            restoreAll(conn, userAndRoles, notebook, messagereceived);
+            break;
           case CLONE_NOTE:
             cloneNote(conn, userAndRoles, notebook, messagereceived);
             break;
@@ -1012,6 +1015,18 @@ public class NotebookServer extends WebSocketServlet implements
     if (folder != null && folder.isTrash()) {
       fromMessage.put("name", folder.getId().replaceFirst(Folder.TRASH_FOLDER_ID + "/", ""));
       renameFolder(conn, userAndRoles, notebook, fromMessage, "restore");
+    }
+  }
+
+  private void restoreAll(NotebookSocket conn, HashSet<String> userAndRoles,
+                             Notebook notebook, Message fromMessage)
+      throws SchedulerException, IOException {
+    Folder trashFolder = notebook.getFolder(Folder.TRASH_FOLDER_ID);
+    if (trashFolder != null) {
+      fromMessage.data = new HashMap<>();
+      fromMessage.put("id", Folder.TRASH_FOLDER_ID);
+      fromMessage.put("name", Folder.ROOT_FOLDER_ID);
+      renameFolder(conn, userAndRoles, notebook, fromMessage, "restore trash");
     }
   }
 
